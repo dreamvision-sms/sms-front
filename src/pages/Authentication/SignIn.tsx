@@ -1,27 +1,110 @@
-import React from 'react';
-import { Link } from 'react-router-dom';
-import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
-import LogoDark from '../../images/logo/logo-dark.svg';
-import Logo from '../../images/logo/logo.svg';
-import DefaultLayout from '../../layout/DefaultLayout';
-
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import { useAppDispatch } from '../../store/hooks';
+import { useLoginUserMutation } from '../../store/api/AuthenticationApi';
+import { useFormik } from 'formik';
+// import Breadcrumb from '../../components/Breadcrumbs/Breadcrumb';
+import * as yup from 'yup';
+import {
+  LoginSuccess,
+  RootLoginError,
+} from '../../utils/interfaces/loginInterfaces';
+import { initialState, loginSuccess } from '../../store/slices/AuthSlice';
+import { CgSpinner } from 'react-icons/cg';
 const SignIn: React.FC = () => {
-  return (
-    <DefaultLayout>
-      <Breadcrumb pageName="Sign In" />
+  const dispatch = useAppDispatch();
+  const navigate = useNavigate();
+  // const searchParams = new URLSearchParams(location.search);
+  // const next = searchParams.get("next") || "";
 
-      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
+  const [passswordHide, setPasswordHide] = useState<boolean>(true);
+  const [isLoading, setisLoading] = useState<boolean>(false);
+  const [Login, { isSuccess }] = useLoginUserMutation();
+
+  const validationSchema = yup.object().shape({
+    username: yup.string().required("Le nom d'utilisateur est requis"),
+    password: yup.string().required('Le mot de passe est requis'),
+  });
+
+  const formik = useFormik({
+    initialValues: {
+      username: '',
+      password: '',
+    },
+    validationSchema: validationSchema,
+    onSubmit: (values) => handleSubmit(values),
+  });
+  const handleSubmit = async (values: {
+    username: string;
+    password: string;
+  }) => {
+    setisLoading(true);
+    const res = await Login(values);
+    console.log('RESPONSE ', res);
+
+    if ('data' in res) {
+      toast.success('Successfully logged');
+      console.log('SUCESS');
+      const sucessData = res?.data as LoginSuccess;
+      console.log(sucessData.token.user.email);
+      const payload: initialState = {
+        access: sucessData.token.access,
+        isError: false,
+        isLogin: true,
+        isLoading: false,
+        refresh: sucessData.token.refresh,
+        user_infos: sucessData.token.user,
+      };
+      // dispacth(setLoginTrue());
+      console.log('DISPATCH');
+      localStorage.setItem('WD_USER', JSON.stringify(payload));
+      dispatch(loginSuccess(payload));
+      setisLoading(false);
+      navigate('dashboard');
+      // await storeToken(payload);
+    } else {
+      const ErrorData = res?.error as RootLoginError;
+      if (ErrorData.status === 401) {
+        console.log(ErrorData);
+        toast.error('Login ou mot de passe incorrect');
+        // toast.show("Login ou mot de passe incorrect", { type: "error" });
+      }
+      setisLoading(false);
+      return; // Retour anticipé en cas d'erreur
+    }
+
+    if (isSuccess) {
+    }
+  };
+
+  useEffect(() => {
+    // let user = null;
+    // try {
+    // 	user = localStorage.getItem("user");
+    // } catch {
+    // 	user = null;
+    // }
+    // if (user != null) navigate(`/redirect`);
+  }, []);
+
+  return (
+    <div className="h-screen">
+      {/* <Breadcrumb pageName="Sign In" /> */}
+
+      <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark h-full">
         <div className="flex flex-wrap items-center">
           <div className="hidden w-full xl:block xl:w-1/2">
             <div className="py-17.5 px-26 text-center">
               <Link className="mb-5.5 inline-block" to="/">
-                <img className="hidden dark:block" src={Logo} alt="Logo" />
-                <img className="dark:hidden" src={LogoDark} alt="Logo" />
+                {/* <img className="hidden dark:block" src={Logo} alt="Logo" /> */}
+                {/* <img className="dark:hidden" src={LogoDark} alt="Logo" /> */}
+                <p className="font-bold text-2xl">Dream School</p>
               </Link>
 
               <p className="2xl:px-20">
-                Lorem ipsum dolor sit amet, consectetur adipiscing elit
-                suspendisse.
+                {/* Lorem ipsum dolor sit amet, consectetur adipiscing elit
+                suspendisse. */}
               </p>
 
               <span className="mt-15 inline-block">
@@ -151,21 +234,26 @@ const SignIn: React.FC = () => {
 
           <div className="w-full border-stroke dark:border-strokedark xl:w-1/2 xl:border-l-2">
             <div className="w-full p-4 sm:p-12.5 xl:p-17.5">
-              <span className="mb-1.5 block font-medium">Start for free</span>
+              {/* <span className="mb-1.5 block font-medium">Start for free</span> */}
               <h2 className="mb-9 text-2xl font-bold text-black dark:text-white sm:text-title-xl2">
-                Sign In to TailAdmin
+                Se connecter à Dream School
               </h2>
 
-              <form>
+              <form onSubmit={formik.handleSubmit}>
                 <div className="mb-4">
                   <label className="mb-2.5 block font-medium text-black dark:text-white">
-                    Email
+                    Username
                   </label>
                   <div className="relative">
                     <input
-                      type="email"
-                      placeholder="Enter your email"
-                      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                      {...formik.getFieldProps('username')}
+                      type="text"
+                      placeholder="Enter your username"
+                      className={`w-full rounded-lg border ${
+                        formik.errors.username
+                          ? 'border-danger focus:border-danger'
+                          : 'border-stroke focus:border-primary'
+                      } bg-transparent py-4 pl-6 pr-10 text-black outline-none  focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary`}
                     />
 
                     <span className="absolute right-4 top-4">
@@ -186,17 +274,29 @@ const SignIn: React.FC = () => {
                       </svg>
                     </span>
                   </div>
+                  {formik.errors.username && (
+                    <p className="text-danger text-sm">
+                      {' '}
+                      {formik.errors.username}{' '}
+                    </p>
+                  )}
                 </div>
 
                 <div className="mb-6">
                   <label className="mb-2.5 block font-medium text-black dark:text-white">
-                    Re-type Password
+                    Password
                   </label>
                   <div className="relative">
                     <input
-                      type="password"
+                      {...formik.getFieldProps('password')}
+                      type={passswordHide ? 'password' : 'text'}
+                      name="password"
                       placeholder="6+ Characters, 1 Capital letter"
-                      className="w-full rounded-lg border border-stroke bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary"
+                      className={`w-full rounded-lg border ${
+                        formik.errors.password
+                          ? 'border-danger'
+                          : 'border-stroke'
+                      } bg-transparent py-4 pl-6 pr-10 text-black outline-none focus:border-primary focus-visible:shadow-none dark:border-form-strokedark dark:bg-form-input dark:text-white dark:focus:border-primary`}
                     />
 
                     <span className="absolute right-4 top-4">
@@ -221,17 +321,60 @@ const SignIn: React.FC = () => {
                       </svg>
                     </span>
                   </div>
+                  {formik.errors.password && (
+                    <p className="text-danger text-sm">
+                      {formik.errors.password}
+                    </p>
+                  )}
+                </div>
+                <div className="mb-4">
+                  <label
+                    htmlFor="checkboxLabelOne"
+                    className="flex cursor-pointer select-none items-center"
+                  >
+                    <div className="relative">
+                      <input
+                        type="checkbox"
+                        id="checkboxLabelOne"
+                        className="sr-only"
+                        onChange={() => {
+                          setPasswordHide(!passswordHide);
+                        }}
+                      />
+                      <div
+                        className={`mr-4 flex h-5 w-5 items-center justify-center rounded border ${
+                          passswordHide &&
+                          'border-primary bg-gray dark:bg-transparent'
+                        }`}
+                      >
+                        <span
+                          className={`h-2.5 w-2.5 rounded-sm ${
+                            passswordHide && 'bg-primary'
+                          }`}
+                        ></span>
+                      </div>
+                    </div>
+                    Voir le mot de passe
+                  </label>
                 </div>
 
                 <div className="mb-5">
-                  <input
+                  <button
+                    draggable={isLoading}
                     type="submit"
-                    value="Sign In"
                     className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
-                  />
+                  >
+                    {isLoading ? (
+                      // <div className="animate-spin">
+                      <CgSpinner className="mx-auto text-2xl animate-spin" />
+                    ) : (
+                      // </div>
+                      'Se connecter'
+                    )}
+                  </button>
                 </div>
 
-                <button className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-stroke bg-gray p-4 hover:bg-opacity-50 dark:border-strokedark dark:bg-meta-4 dark:hover:bg-opacity-50">
+                {/* <button className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-stroke bg-gray p-4 hover:bg-opacity-50 dark:border-strokedark dark:bg-meta-4 dark:hover:bg-opacity-50">
                   <span>
                     <svg
                       width="20"
@@ -266,11 +409,11 @@ const SignIn: React.FC = () => {
                     </svg>
                   </span>
                   Sign in with Google
-                </button>
+                </button> */}
 
                 <div className="mt-6 text-center">
                   <p>
-                    Don’t have any account?{' '}
+                    Mot de passe oublié ?{' '}
                     <Link to="/auth/signup" className="text-primary">
                       Sign Up
                     </Link>
@@ -281,7 +424,7 @@ const SignIn: React.FC = () => {
           </div>
         </div>
       </div>
-    </DefaultLayout>
+    </div>
   );
 };
 
