@@ -12,6 +12,7 @@ import {
 } from '../../utils/interfaces/loginInterfaces';
 import { initialState, loginSuccess } from '../../store/slices/AuthSlice';
 import { CgSpinner } from 'react-icons/cg';
+import { Button } from '@mui/material';
 const SignIn: React.FC = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
@@ -359,8 +360,27 @@ const SignIn: React.FC = () => {
                 </div>
 
                 <div className="mb-5">
-                  <button
-                    draggable={isLoading}
+                  <Button
+                    type="submit"
+                    disabled={isLoading}
+                    variant="contained"
+                    classes={{
+                      root: 'w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90 py-4',
+                      contained: 'py-4',
+                      text: 'py-4 text-red-500',
+                    }}
+                    // className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
+                  >
+                    {isLoading ? (
+                      // <div className="animate-spin">
+                      <CgSpinner className="mx-auto text-2xl animate-spin" />
+                    ) : (
+                      // </div>
+                      'Se connecter'
+                    )}
+                  </Button>
+                  {/* <button
+                    disabled={isLoading}
                     type="submit"
                     className="w-full cursor-pointer rounded-lg border border-primary bg-primary p-4 text-white transition hover:bg-opacity-90"
                   >
@@ -371,7 +391,7 @@ const SignIn: React.FC = () => {
                       // </div>
                       'Se connecter'
                     )}
-                  </button>
+                  </button> */}
                 </div>
 
                 {/* <button className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-stroke bg-gray p-4 hover:bg-opacity-50 dark:border-strokedark dark:bg-meta-4 dark:hover:bg-opacity-50">

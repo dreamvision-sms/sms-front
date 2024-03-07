@@ -12,7 +12,7 @@ import { IncommingSessionInterface } from '../../utils/interfaces/sessions';
 export const SessionApi = createApi({
   reducerPath: 'SessionApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: `${BACKEND_API_URL}session/`,
+    baseUrl: `${BACKEND_API_URL}config/sessions/`,
     prepareHeaders: async (headers) => {
       const user = localStorage.getItem('WD_USER');
       if (user) {
@@ -28,7 +28,7 @@ export const SessionApi = createApi({
 
   endpoints: (builder) => ({
     getSessions: builder.query<IncommingSessionInterface[], void>({
-      query: () => `all/`,
+      query: () => `get_sessions/`,
     }),
   }),
 });

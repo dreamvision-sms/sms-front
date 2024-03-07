@@ -1,59 +1,86 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { IncommingSessionInterface } from '../../utils/interfaces/sessions';
 
-const SessionList = (session: IncommingSessionInterface[]) => {
+interface Props {
+  session: IncommingSessionInterface[];
+}
+const SessionList: React.FC<Props> = ({ session }: Props) => {
   const [filteredData, setFilteredData] =
     useState<IncommingSessionInterface[]>(session);
   useEffect(() => {
     setFilteredData(session);
   }, [session]);
   return (
-    <div className="rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark">
-      <div className="py-6 px-4 md:px-6 xl:px-7.5">
-        <h4 className="text-xl font-semibold text-black dark:text-white">
-          Top Products
-        </h4>
-        <input />
-      </div>
+    <div className="rounded-sm border border-stroke bg-white px-5 pt-6 pb-2.5 shadow-default dark:border-strokedark dark:bg-boxdark sm:px-7.5 xl:pb-1">
+      <h4 className="mb-6 text-xl font-semibold text-black dark:text-white">
+        Lste des sessions
+      </h4>
 
-      <div className="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5">
-        <div className="col-span-3 flex items-center">
-          <p className="font-medium">Product Name</p>
+      <div className="flex flex-col">
+        <div className="grid grid-cols-3 rounded-sm bg-gray-2 dark:bg-meta-4 sm:grid-cols-5">
+          <div className="p-2.5 xl:p-5">
+            <h5 className="text-sm font-medium uppercase xsm:text-base">
+              Session
+            </h5>
+          </div>
+          <div className="p-2.5 text-center xl:p-5">
+            <h5 className="text-sm font-medium uppercase xsm:text-base">
+              Debut
+            </h5>
+          </div>
+          <div className="p-2.5 text-center xl:p-5">
+            <h5 className="text-sm font-medium uppercase xsm:text-base">FIN</h5>
+          </div>
+          <div className="hidden p-2.5 text-center sm:block xl:p-5">
+            <h5 className="  text-sm font-medium uppercase xsm:text-base">
+              Active
+            </h5>
+          </div>
+          <div className="hidden p-2.5 text-center sm:block xl:p-5">
+            <h5 className="text-sm font-medium uppercase xsm:text-base">
+              Action
+            </h5>
+          </div>
         </div>
-        <div className="col-span-2 hidden items-center sm:flex">
-          <p className="font-medium">Category</p>
-        </div>
-        <div className="col-span-1 flex items-center">
-          <p className="font-medium">Price</p>
-        </div>
-        <div className="col-span-1 flex items-center">
-          <p className="font-medium">Sold</p>
-        </div>
-        <div className="col-span-1 flex items-center">
-          <p className="font-medium">Profit</p>
-        </div>
-      </div>
 
-      {filteredData.map((session, key) => (
-        <div
-          className="grid grid-cols-6 border-t border-stroke py-4.5 px-4 dark:border-strokedark sm:grid-cols-8 md:px-6 2xl:px-7.5"
-          key={key}
-        >
-          <div className="col-span-3 flex items-center">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-              <div className="h-12.5 w-15 rounded-md">
-                <img src={session.start_date} alt="Product" />
-              </div>
-              <p className="text-sm text-black dark:text-white">
-                {session.end_date}
+        {filteredData.map((session, key) => (
+          <div
+            className={`grid grid-cols-3 sm:grid-cols-5 ${
+              key === filteredData.length - 1
+                ? ''
+                : 'border-b border-stroke dark:border-strokedark'
+            }`}
+            key={key}
+          >
+            <div className="flex items-center gap-3 p-2.5 xl:p-5">
+              <p className="hidden text-black dark:text-white sm:block font-bold">
+                SESSION {session.start_date.toLocaleString()} /{' '}
+                {session.end_date.toLocaleString()}
               </p>
             </div>
+
+            <div className="flex items-center justify-center p-2.5 xl:p-5">
+              <p className="text-black dark:text-white">
+                {session.start_date.toLocaleString()}
+              </p>
+            </div>
+
+            <div className="flex items-center justify-center p-2.5 xl:p-5">
+              <p className="text-meta-3">
+                {session.start_date.toLocaleString()}
+              </p>
+            </div>
+
+            <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
+              {/* <p className="text-black dark:text-white">{session.end_date}</p> */}
+            </div>
+
+            <div className="hidden items-center justify-center p-2.5 sm:flex xl:p-5">
+              {/* <p className="text-meta-5">{session.id}%</p> */}
+            </div>
           </div>
-          <div className="col-span-2 hidden items-center sm:flex">
-            <p className="text-sm text-black dark:text-white"></p>
-          </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 };
